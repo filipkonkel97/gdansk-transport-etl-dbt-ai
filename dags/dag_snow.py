@@ -31,7 +31,7 @@ def bootstrap_snowflake():
     def create_trips_table():
         hook = SnowflakeHook(snowflake_conn_id="snowflake_conn")
         hook.run("""
-        CREATE OR REPLACE TABLE buses.bronze.bronze_trips (
+        CREATE TABLE IF NOT EXISTS buses.bronze.bronze_trips (
                         ID VARCHAR(20),
                         ROUTEID NUMBER(38,0),
                         TRIPID NUMBER(38,0),
@@ -48,7 +48,7 @@ def bootstrap_snowflake():
     def create_delays_table():
         hook = SnowflakeHook(snowflake_conn_id="snowflake_conn")
         hook.run("""
-        CREATE OR REPLACE TABLE buses.bronze.bronze_delays (
+        CREATE TABLE IF NOT EXISTS buses.bronze.bronze_delays (
                         ID VARCHAR(20),
                         TRIP NUMBER(38,0),
                         STATUS VARCHAR(20),
@@ -69,6 +69,38 @@ def bootstrap_snowflake():
         """
     )
 
-    create_database() >> create_schema() >> [create_trips_table(), create_delays_table()] 
+    @task
+    def create_stops_table():
+        hook = SnowflakeHook(snowflake_conn_id="snowflake_conn")
+        hook.run("""
+        CREATE TABLE IF NOT EXISTS buses.bronze.bronze_stops (
+                        STOPID NUMBER(38,0),
+                        STOPCODE STRING,
+                        STOPNAME STRING,
+                        STOPSHORTNAME STRING,
+                        STOPDESC STRING,
+                        SUBNAME STRING,
+                        DATE TIMESTAMP_NTZ,
+                        ZONEID NUMBER(38,0),
+                        ZONENAME STRING,
+                        WHEELCHAIRBOARDING NUMBER(1,0),
+                        VIRTUAL NUMBER(1,0),
+                        NONPASSENGER NUMBER(1,0),
+                        DEPOT NUMBER(1,0),
+                        TICKETZONEBORDER NUMBER(1,0),
+                        ONDEMAND NUMBER(1,0),
+                        ACTIVATIONDATE DATE,
+                        STOPLAT FLOAT,
+                        STOPLON FLOAT,
+                        TYPE STRING,
+                        STOPURL STRING,
+                        LOCATIONTYPE STRING,
+                        PARENTSTATION STRING,
+                        STOPTIMEZONE STRING
+                        );
+        """
+    )
+
+    create_database() >> create_schema() >> [create_trips_table(), create_delays_table(), create_stops_table()] 
 
 bootstrap_snowflake()
