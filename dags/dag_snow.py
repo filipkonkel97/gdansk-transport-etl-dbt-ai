@@ -100,7 +100,22 @@ def bootstrap_snowflake():
                         );
         """
     )
+        
+    @task
+    def create_routes_table():
+        hook = SnowflakeHook(snowflake_conn_id="snowflake_conn")
+        hook.run("""
+        CREATE TABLE IF NOT EXISTS buses.bronze.bronze_routes (
+                        ROUTEID NUMBER(38,0),
+                        AGENCYID NUMBER(38,0),
+                        ROUTESHORTNAME STRING,
+                        ROUTELONGNAME STRING,
+                        ACTIVATIONDATE DATE,
+                        ROUTETYPE STRING
+                    );
+        """
+    )
 
-    create_database() >> create_schema() >> [create_trips_table(), create_delays_table(), create_stops_table()] 
+    create_database() >> create_schema() >> [create_trips_table(), create_delays_table(), create_stops_table(), create_routes_table()] 
 
 bootstrap_snowflake()
