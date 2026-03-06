@@ -28,7 +28,7 @@ def trips_pipeline():
     
     @task
     def transform_buses_trips_data(data):
-        from etl_logic.trips_data_transformation import transform_trips_data
+        from etl_logic.data_transformations import transform_trips_data
 
         transformed_data = transform_trips_data(data)
 

@@ -116,6 +116,67 @@ def bootstrap_snowflake():
         """
     )
 
-    create_database() >> create_schema() >> [create_trips_table(), create_delays_table(), create_stops_table(), create_routes_table()] 
+    @task
+    def create_vehicles_table():
+        hook = SnowflakeHook(snowflake_conn_id="snowflake_conn")
+        hook.run("""
+        CREATE TABLE IF NOT EXISTS buses.bronze.bronze_vehicles (
+                        PHOTO VARCHAR,
+                        VEHICLECODE VARCHAR,
+                        CARRIRER VARCHAR,
+                        TRANSPORTATIONTYPE VARCHAR,
+                        VEHICLECHARACTERISTICS VARCHAR,
+                        BIDIRECTIONAL BOOLEAN,
+                        HISTORICVEHICLE BOOLEAN,
+                        LENGTH FLOAT,
+                        BRAND VARCHAR,
+                        MODEL VARCHAR,
+                        PRODUCTIONYEAR INTEGER,
+                        SEATS INTEGER,
+                        STANDINGPLACES INTEGER,
+                        AIRCONDITIONING BOOLEAN,
+                        MONITORING BOOLEAN,
+                        INTERNALMONITOR BOOLEAN,
+                        FLOORHEIGHT VARCHAR,
+                        KNEELINGMECHANISM BOOLEAN,
+                        WHEELCHAIRSRAMP BOOLEAN,
+                        USB BOOLEAN,
+                        VOICEANNOUNCEMENTS BOOLEAN,
+                        AED BOOLEAN,
+                        BIKEHOLDERS INTEGER,
+                        TICKETMACHINE BOOLEAN,
+                        PATRON VARCHAR,
+                        URL VARCHAR,
+                        PASSENGERSDOORS INTEGER,
+                        DRIVETYPE VARCHAR
+                    );
+        """
+    )
+        
+    @task
+    def create_positions_table():
+        hook = SnowflakeHook(snowflake_conn_id="snowflake_conn")
+        hook.run("""
+        CREATE TABLE IF NOT EXISTS buses.bronze.bronze_positions (
+                        GENERATED TIMESTAMP,
+                        ROUTESHORTNAME STRING,
+                        TRIPID FLOAT,
+                        ROUTEID INT,
+                        HEADSIGN STRING,
+                        VEHICLECODE STRING,
+                        VEHICLESERVICE STRING,
+                        VEHICLEID INT,
+                        SPEED INT,
+                        DIRECTION INT,
+                        DELAY INT,
+                        SCHEDULEDTRIPSTARTTIME TIMESTAMP,
+                        LAT FLOAT,
+                        LON FLOAT,
+                        GPSQUALITY INT
+                    );
+        """
+    )
+
+    create_database() >> create_schema() >> [create_trips_table(), create_delays_table(), create_stops_table(), create_routes_table(), create_vehicles_table(), create_positions_table()] 
 
 bootstrap_snowflake()

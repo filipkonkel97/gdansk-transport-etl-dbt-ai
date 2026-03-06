@@ -28,7 +28,7 @@ def stops_pipeline():
     
     @task
     def transform_stops_data(data):
-        from etl_logic.stops_data_transformation import transform_stops_data
+        from etl_logic.data_transformations import transform_stops_data
 
         transformed_data = transform_stops_data(data)
 
