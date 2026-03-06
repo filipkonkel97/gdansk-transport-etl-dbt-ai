@@ -1,0 +1,355 @@
+version: 2
+
+models:
+  - name: dim_stops
+    description: Cleansed table which contains tricity area bus stops data.
+    columns:
+
+      - name: stop_id
+        description: Primary key for the stop
+        tests:
+          - unique
+          - not_null
+
+      - name: stop_code
+        description: Number of a bus stop post unique within a bus stop from the timetabling software. Value available only for the poles belonging to ZTM in Gdańsk.
+        tests:
+          - not_null
+
+      - name: stop_name
+        description: Name of the stop from the timetabling software. The value is available only for the poles belonging to ZTM in Gdańsk.
+        tests:
+          - not_null
+
+      - name: short_name
+        description: Identifier of a bus stop post, unique on the scale of the Organiser, i.e. ZTM in Gdańsk and ZKM in Gdynia. The value comes from the TRISTAR system.
+        tests:
+          - unique
+          - not_null
+
+      - name: stop_desc
+        description: Name of the stop from the TRISTAR system.
+        tests:
+          - not_null
+
+      - name: sub_name
+        description: Optional field. For ZTM in Gdansk, a non-empty field contains the number of a bus stop post unique within a bus stop; the value comes from the TRISTAR system.
+        tests:
+          - unique
+          - not_null
+
+      - name: zone_id
+        description: Unique identifier of the city/municipality, to which the bus/tram stop post belongs. The value is available only for poles belonging to ZTM in Gdańsk
+        tests:
+          - unique
+
+      - name: zone_name
+        description: Name of the town/municipality where the bus stop post is located
+        tests:
+          - unique
+
+      - name: virtual
+        description: A flag indicating whether a bus stop post is virtual (not intended for a passenger).
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['True',
+                         'False']
+
+      - name: nonpassenger
+        description: A flag indicating whether a stop post on the route is intended for a passenger.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['True',
+                         'False']
+
+      - name: depot
+        description: A flag indicating whether a bus stop pole is a depot.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['True',
+                         'False']
+
+      - name: ticket_zone_border
+        description: A flag indicating whether a post is a tariff zone boundary.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['True',
+                         'False']
+
+      - name: on_demand
+        description: A flag indicating whether the post has an on-demand status.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['True',
+                         'False']
+
+      - name: type
+        description: A field indicating the type of rolling stock served by the post.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['BUS',
+                         'TRAM',
+                         'BUS_TRAM',
+                         'UNKNOWN']
+
+  - name: fct_vehicle_positions
+    description: Cleansed table which contains information on the GPS positions of all vehicles running ZTM lines in Gdansk.
+    columns:
+
+      - name: speed
+        description: Vehicle speed at the time when the delay was estimated; value given in km/h.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 70
+
+      - name: direction
+        description: Geographical driving direction from 0 to 315 in increments of 45, where 0 means north and 315 means north-west.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 315
+
+      - name: gps_quality
+        description: "Quality of the recorded GPS signal. Possible values are: 
+                      0: No GPS signal
+                      1: Number of visible satellites insufficient for 2D operation
+                      2: GPS receiver operation in 2D mode
+                      3: GPS receiver operation in 3D mode"
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['0',
+                        '1',
+                        '2',
+                        '3']
+
+      - name: trip_id
+        description: Identifier of the trip (variant/route) on which the vehicle is travelling. References the trip_id from the dim_trips dimension table.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_trips')
+                field: trip_id
+
+      - name: vehicle_code
+        description: Side number of the vehicle carrying out the course. References the vehicle_code from the dim_vehicles dimension table.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_vehicles')
+                field: vehicle_code
+
+
+  - name: fct_delays
+    description: Cleansed table which contains information about the estimated departure times of public transport vehicles from all bus stops.
+    columns:
+
+      - name: stop_id
+        description: Is the identifier of the stop. References the stop_id from the dim_stops dimension table.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_stops')
+                field: stop_id
+
+      - name: trip_id
+        description: Is the identifier of the option/route to which the post belongs. References the trip_id from the dim_trips dimension table.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_trips')
+                field: trip_id
+
+      - name: est_departure_time
+        description: Estimated departure time from a stop.
+        tests:
+          - is_datetime
+
+      - name: trip_starttime
+        description: Scheduled start time.
+        tests:
+          - is_datetime
+
+      - name: scheduled_departure_time
+        description: Time of departure based on the schedule.
+        tests:
+          - is_datetime
+
+      - name: current_datetime
+        description: Time stamp specifying the time of calculation of the forecast departure time.
+        tests:
+          - is_datetime
+
+      - name: time_of_day
+        description: Column containing information on time of day
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['Morning',
+                        'Afternoon',
+                        'Evening']
+
+
+  - name: dim_routes
+    description: Cleansed table storing information about lines.
+    columns:
+
+      - name: route_id
+        description: Internal line identifier unique within the Tri-City area.
+        tests:
+          - unique
+          - not_null
+
+      - name: agency_id
+        description: The fleet identifier to which the line belongs.
+        tests:
+          - not_null
+
+      - name: route_short_name
+        description: Line number used, e.g. at stops.
+        tests:
+          - not_null
+
+      - name: route_long_name
+        description: Line description usually consisting of the names of the terminal stops.
+        tests:
+          - not_null
+
+      - name: activation_date
+        description: Date of activation of the topology version for the line.
+        tests:
+          - is_datetime
+          - not_null
+
+      - name: route_type
+        description: "Information about the type of line. Possible values are:
+                     BUS – bus line,
+                     TRAM – tram line,
+                     FERRY - line operated by a water tram,
+                     UNKNOWN - line type for which the data assignment mechanism did not find a match between the TRISTAR system and the timetable scheduling program."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['BUS','TRAM','FERRY','UNKNOWN']
+
+  - name: dim_trips
+    description: Cleansed table storing definitions of routes/variants and their affiliation to lines.
+    columns:
+      - name: id
+        description: Internal trip identifier, created according to the rule „R” + route_id + „T” + trip_id.
+        tests:
+          - unique
+          - not_null
+
+      - name: route_id
+        description: Internal identifier of the line to which the variant belongs. References the route_id from the dim_routes dimension table.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_routes')
+                field: route_id
+
+      - name: trip_id
+        description: Variant identifier unique within the line.
+        tests:
+          - not_null
+
+      - name: trip_headsign
+        description: 'Route on which the variant is implemented. It usually consists of the names of the starting stop and terminus and, 
+                      optionally, a suggestion as to what the deviation from the main variant consists of.'
+        tests:
+          - not_null
+
+      - name: trip_short_name
+        description: Contains the same value as trip_id
+        tests:
+          - not_null
+
+      - name: direction_id
+        description: 'Trip variant direction. Possible values: 1 - There, 2 - Return.'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_distinct_values_to_be_in_set:
+              arguments:
+                value_set: ["1", "2"]
+
+      - name: activation_date
+        description: Date of activation of the topology version concerning routes.
+        tests:
+          - not_null
+
+      - name: type
+        description: "Column containing information about type of the trip variant. Possible values are:
+                     MAIN - Main variant of the trip.
+                     SIDE - Passenger variant of the trip, other than the main one.
+                     NON_PASSANGER - Technical variant, not available to passengers.
+                     UNKNOWN - route variant for which the data assignment mechanism did not find a match between 
+                               the TRISTAR system and the timetable scheduling program. For this reason, 
+                               this value always appears for lines belonging to ZKM Gdynia."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['MAIN','SIDE','NON_PASSENGER','UNKNOWN']
+
+  - name: dim_vehicles
+    description: Cleansed table storing information about vehicles, belonging to operators, that implement timetables prepared by ZTM Gdańsk.
+    columns:
+      - name: vehicle_code
+        description: "inventory number, a unique four-digit vehicle number in the Organiser's transport network (i.e. ZTM in Gdańsk), also displayed on the vehicle (on the exterior walls and inside the vehicle)."
+        tests:
+          - not_null
+          - unique
+
+      - name: carrierer
+        description:  "operator/carrier - the owner or operator of a vehicle with which the Organiser of urban transport has concluded an appropriate contract for the provision of transport services within the Organiser's network."
+        tests:
+          - not_null
+
+      - name: transportation_type
+        description: 'Vehicle type. Possible values are: “autobus” or "tramwaj".'
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['autobus','tramwaj']
+
+      - name: vehicle_characteristics
+        description: 'Vehicle characteristic. Possible values are:
+                     "Minibus"
+                     "Midibus"
+                     "Standardowy"
+                     "Wielkopojemny"
+                     "Przegubowy".'
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Minibus','Midibus','Standardowy','Wielkopojemny','Przegubowy']
+
+      - name: bidirectional
+        description: "A flag indicating whether the vehicle is bidirectional, i.e. whether it has a driver’s cab at both ends of the vehicle."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['true','false']
+
+      - name: historic_vehicle
+        description: "A flag indicating whether the vehicle is bidirectional, i.e. whether it has a driver's cab at both ends of the vehicle."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['true','false']
