@@ -9,7 +9,20 @@ WITH bronze_trips AS (
         "ID"::VARCHAR(10) AS id,
         "ROUTEID"::SMALLINT AS route_id,
         "TRIPID"::SMALLINT AS trip_id,
-        "TRIPHEADSIGN"::VARCHAR(100) AS trip_headsign,
+        
+        TRIM(
+            REGEXP_REPLACE(
+                REGEXP_REPLACE(
+                    REGEXP_REPLACE(
+                        REGEXP_REPLACE("TRIPHEADSIGN", '\\s*\\([^)]*\\)', ''),
+                        '^[^A-Za-z0-9]+', ''
+                    ),
+                    '\\s*>\\s*', ' - '
+                ),
+                '\\s+', ' '
+            )
+        )::VARCHAR(100) AS trip_headsign,
+
         "TRIPSHORTNAME"::VARCHAR(3) AS trip_short_name,
         "DIRECTIONID"::SMALLINT AS direction_id,
         "ACTIVATIONDATE"::DATE AS activation_date,
