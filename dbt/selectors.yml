@@ -1,0 +1,56 @@
+selectors:
+  - name: routes_only
+    definition:
+      union:
+        - method: fqn
+          value: dim_routes
+        - method: fqn
+          value: scd_silver_routes
+        - method: fqn
+          value: silver_routes
+
+  - name: stops_only
+    definition:
+      union:
+        - method: fqn
+          value: dim_stops
+        - method: fqn
+          value: scd_silver_stops
+        - method: fqn
+          value: silver_stops
+
+  - name: vehicles_only
+    definition:
+      union:
+        - method: fqn
+          value: dim_vehicles
+        - method: fqn
+          value: scd_silver_vehicles
+        - method: fqn
+          value: silver_vehicles
+
+  - name: buses_psn_only
+    definition:
+      union:
+        - method: fqn
+          value: fct_positions
+        - method: fqn
+          value: silver_positions
+
+  - name: buses_delays_only
+    definition:
+      union:
+        - method: fqn
+          value: fct_delays
+        - method: fqn
+          value: silver_delays
+
+  - name: trips_only
+    definition:
+      union:
+        - method: fqn
+          value: dim_trips
+        - method: fqn
+          value: scd_silver_trips
+        - method: fqn
+          value: silver_trips
