@@ -1,25 +1,45 @@
 {{
     config(
         materialized='incremental',
-        unique_key=['vehicle_code'],
+        unique_key='vehicle_code',
         incremental_strategy='merge',
     )
 }}
-SELECT
-    vehicle_code,
-    carrier,
-    transportation_type,
-    vehicle_characteristics,
-    production_year,
-    seats,
-    standing_places,
-    air_conditioning,
-    floor_height,
-    kneeling_mechanism,
-    wheelchairs_ramp,
-    voice_announcements,
-    drive_type
-FROM
-    {{ ref('scd_silver_vehicles') }}
-WHERE
-    dbt_valid_to IS NULL
+
+WITH source_data AS (
+    SELECT
+        vehicle_code,
+        carrier,
+        transportation_type,
+        vehicle_characteristics,
+        production_year,
+        seats,
+        standing_places,
+        air_conditioning,
+        floor_height,
+        kneeling_mechanism,
+        wheelchairs_ramp,
+        voice_announcements,
+        drive_type,
+        dbt_updated_at
+    FROM
+        {{ ref('scd_silver_vehicles') }}
+    WHERE
+        dbt_valid_to IS NULL
+),
+
+max_loaded AS (
+
+    SELECT COALESCE(MAX(dbt_updated_at), '1900-01-01') AS max_updated
+    FROM source_data
+
+)
+
+SELECT *
+FROM source_data
+
+{% if is_incremental() %}
+
+WHERE dbt_updated_at > (SELECT max_updated FROM max_loaded)
+
+{% endif %}
