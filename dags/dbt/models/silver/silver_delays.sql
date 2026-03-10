@@ -1,7 +1,8 @@
 {{
     config(
         schema='silver',
-        materialized='incremental'
+        materialized='incremental',
+        incremental_strategy='append'
     )
 }}
 WITH bronze_delays AS (
@@ -44,3 +45,8 @@ SELECT
     vehicle_service
 FROM
     bronze_delays
+WHERE
+    1=1
+    {% if is_incremental() %}
+        AND current_datetime > (SELECT MAX(current_datetime) FROM {{ this }})
+    {% endif %}
