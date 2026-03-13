@@ -11,7 +11,18 @@ WITH bronze_delays AS (
         "ID"::TEXT AS id,
         "DELAYINSECONDS"::INTEGER AS delay_in_seconds,
         "ESTIMATEDTIME"::TIMESTAMP AS est_departure_time,
-        "HEADSIGN"::VARCHAR(50) AS headsign,
+        TRIM(
+            REGEXP_REPLACE(
+                REGEXP_REPLACE(
+                    REGEXP_REPLACE(
+                        REGEXP_REPLACE("HEADSIGN", '\\s*\\([^)]*\\)', ''),
+                        '^[^A-Za-z0-9]+', ''
+                    ),
+                    '\\s*>\\s*', ' - '
+                ),
+                '\\s+', ' '
+            )
+        )::VARCHAR(50) AS headsign,
         "ROUTEID"::SMALLINT AS route_id,
         "ROUTESHORTNAME"::TEXT AS route_code,
         "SCHEDULEDTRIPSTARTTIME"::TIMESTAMP AS trip_starttime,
