@@ -2,6 +2,7 @@
     config(
         schema='silver',
         materialized='incremental',
+        incremental_strategy='append'
     )
 }}
 
@@ -28,3 +29,8 @@ WITH bronze_vehicle_positions AS (
 
 SELECT *
 FROM bronze_vehicle_positions
+WHERE
+    1=1
+    {% if is_incremental() %}
+        AND generated_at> (SELECT MAX(generated_at) FROM {{ this }})
+    {% endif %}

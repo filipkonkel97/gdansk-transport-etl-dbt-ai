@@ -1,3 +1,5 @@
+-- depends_on: {{ ref('dim_vehicles') }}
+
 {{ config(
     schema='gold',
     materialized='incremental',
@@ -7,33 +9,35 @@
 SELECT
 
     {{ dbt_utils.generate_surrogate_key([
-    'vehicle_code',
-    'generated_at',
-    'latitude',
-    'longitude'
+    'p.vehicle_code',
+    'p.generated_at',
+    'p.latitude',
+    'p.longitude'
     ]) }} AS position_event_id,
 
-    vehicle_code,
-    route_id,
-    trip_id,
+    p.vehicle_code,
+    p.route_id,
+    p.trip_id,
 
-    DATE(generated_at) AS event_date,
-    generated_at AS event_datetime,
+    DATE(p.generated_at) AS event_date,
+    p.generated_at AS event_datetime,
 
-    latitude,
-    longitude,
+    p.latitude,
+    p.longitude,
 
-    speed,
-    direction,
+    p.speed,
+    p.direction,
 
-    delay_in_seconds,
-    gps_quality,
+    p.delay_in_seconds,
+    p.gps_quality,
 
-    vehicle_id,
-    vehicle_service,
-    trip_starttime
+    p.vehicle_id,
+    p.vehicle_service,
+    p.trip_starttime
 
-FROM {{ ref('silver_positions') }}
+FROM {{ ref('silver_positions') }} p 
+JOIN {{ ref('dim_vehicles')}} v
+ON p.vehicle_code = v.vehicle_code
 
 {% if is_incremental() %}
 

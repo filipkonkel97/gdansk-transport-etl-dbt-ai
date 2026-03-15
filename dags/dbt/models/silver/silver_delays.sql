@@ -16,13 +16,13 @@ WITH bronze_delays AS (
                 REGEXP_REPLACE(
                     REGEXP_REPLACE(
                         REGEXP_REPLACE("HEADSIGN", '\\s*\\([^)]*\\)', ''),
-                        '^[^[:alnum:]]+', ''
+                        '^[^A-Za-z0-9ĄĆĘŁŃÓŚŹŻąćęłńóśźż]+', ''
                     ),
                     '\\s*>\\s*', ' - '
                 ),
                 '\\s+', ' '
             )
-        )::VARCHAR(50) AS headsign
+        )::VARCHAR(50) AS headsign,
         "ROUTEID"::SMALLINT AS route_id,
         "ROUTESHORTNAME"::TEXT AS route_code,
         "SCHEDULEDTRIPSTARTTIME"::TIMESTAMP AS trip_starttime,
