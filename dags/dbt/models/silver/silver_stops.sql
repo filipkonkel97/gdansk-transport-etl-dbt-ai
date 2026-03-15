@@ -7,8 +7,8 @@
 WITH bronze_stops AS (
     SELECT
         "STOPID"::INTEGER AS stop_id,
-        "STOPCODE"::TEXT AS stop_code,
-        "STOPNAME"::VARCHAR(50) AS stop_name,
+        COALESCE("STOPCODE", "SUBNAME")::TEXT AS stop_code,
+        COALESCE("STOPNAME", "STOPDESC")::VARCHAR(50) AS stop_name,
         "STOPSHORTNAME"::VARCHAR(50) AS short_name,
         "STOPDESC"::TEXT AS stop_desc,
         "SUBNAME"::VARCHAR(50) AS sub_name,

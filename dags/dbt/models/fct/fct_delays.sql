@@ -1,3 +1,5 @@
+-- depends_on: {{ ref('dim_stops') }}
+
 {{
     config(
         schema='gold',
@@ -9,36 +11,38 @@
 SELECT
 
     {{ dbt_utils.generate_surrogate_key([
-    'trip_id',
-    'stop_id',
-    'vehicle_code',
-    'current_datetime'
+        'd.trip_id',
+        'd.stop_id',
+        'd.vehicle_code',
+        'd.current_datetime'
     ]) }} AS event_id,
 
-    stop_id,
-    route_id,
-    trip_id,
-    vehicle_code,
-    headsign,
+    d.stop_id,
+    d.route_id,
+    d.trip_id,
+    d.vehicle_code,
+    d.headsign,
 
-    current_datetime AS event_datetime,
+    d.current_datetime AS event_datetime,
 
-    scheduled_departure_time,
-    est_departure_time,
-    trip_starttime,
+    d.scheduled_departure_time,
+    d.est_departure_time,
+    d.trip_starttime,
 
-    delay_in_seconds,
-    delay_in_seconds / 60 AS delay_minutes,
+    d.delay_in_seconds,
+    d.delay_in_seconds / 60 AS delay_minutes,
 
-    status,
-    vehicle_service,
-    vehicle_id
+    d.status,
+    d.vehicle_service,
+    d.vehicle_id
 
-FROM {{ ref('silver_delays') }}
+FROM {{ ref('silver_delays') }} d
+JOIN {{ ref('dim_stops') }} s
+ON d.stop_id = s.stop_id
 
 {% if is_incremental() %}
 
-WHERE current_datetime >
+AND current_datetime >
 (
     SELECT MAX(event_datetime)
     FROM {{ this }}

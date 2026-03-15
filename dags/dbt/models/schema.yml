@@ -24,7 +24,6 @@ models:
       - name: short_name
         description: Identifier of a bus stop post, unique on the scale of the Organiser, i.e. ZTM in Gdańsk and ZKM in Gdynia. The value comes from the TRISTAR system.
         tests:
-          - unique
           - not_null
 
       - name: stop_desc
@@ -35,18 +34,13 @@ models:
       - name: sub_name
         description: Optional field. For ZTM in Gdansk, a non-empty field contains the number of a bus stop post unique within a bus stop; the value comes from the TRISTAR system.
         tests:
-          - unique
           - not_null
 
       - name: zone_id
         description: Unique identifier of the city/municipality, to which the bus/tram stop post belongs. The value is available only for poles belonging to ZTM in Gdańsk
-        tests:
-          - unique
 
       - name: zone_name
         description: Name of the town/municipality where the bus stop post is located
-        tests:
-          - unique
 
       - name: depot
         description: A flag indicating whether a bus stop pole is a depot.
@@ -64,7 +58,7 @@ models:
                 values: ['True',
                          'False']
 
-  - name: fct_vehicle_positions
+  - name: fct_positions
     description: Cleansed table which contains information on the GPS positions of all vehicles running ZTM lines in Gdansk.
     columns:
 
@@ -150,19 +144,10 @@ models:
         tests:
           - is_datetime
 
-      - name: current_datetime
+      - name: event_datetime
         description: Time stamp specifying the time of calculation of the forecast departure time.
         tests:
           - is_datetime
-
-      - name: time_of_day
-        description: Column containing information on time of day
-        tests:
-          - accepted_values:
-              arguments:
-                values: ['Morning',
-                        'Afternoon',
-                        'Evening']
 
 
   - name: dim_routes
@@ -188,7 +173,7 @@ models:
       - name: activation_date
         description: Date of activation of the topology version for the line.
         tests:
-          - is_datetime
+          - is_date
           - not_null
 
       - name: route_type
@@ -278,7 +263,7 @@ models:
           - not_null
           - accepted_values:
               arguments:
-                values: ['autobus','tramwaj']
+                values: ['Autobus','Tramwaj']
 
       - name: vehicle_characteristics
         description: 'Vehicle characteristic. Possible values are:
