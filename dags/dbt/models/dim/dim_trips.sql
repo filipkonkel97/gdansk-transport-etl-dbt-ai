@@ -1,7 +1,7 @@
 {{
     config(
         materialized='incremental',
-        unique_key='trip_id',
+        unique_key='id',
         incremental_strategy='merge'
     )
 }}
@@ -9,6 +9,7 @@
 WITH source_data AS (
 
     SELECT
+        id,
         trip_id,
         route_id,
         trip_headsign,

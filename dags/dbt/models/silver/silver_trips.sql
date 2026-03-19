@@ -15,7 +15,7 @@ WITH bronze_trips AS (
                 REGEXP_REPLACE(
                     REGEXP_REPLACE(
                         REGEXP_REPLACE("TRIPHEADSIGN", '\\s*\\([^)]*\\)', ''),
-                        '^[^A-Za-z0-9]+', ''
+                        '^[^A-Za-z0-9ĄĆĘŁŃÓŚŹŻąćęłńóśźż]+', ''
                     ),
                     '\\s*>\\s*', ' - '
                 ),

@@ -66,17 +66,15 @@ models:
         description: Vehicle speed at the time when the delay was estimated; value given in km/h.
         tests:
           - dbt_expectations.expect_column_values_to_be_between:
-              arguments:
-                min_value: 0
-                max_value: 70
+              min_value: 0
+              max_value: 70
 
       - name: direction
         description: Geographical driving direction from 0 to 315 in increments of 45, where 0 means north and 315 means north-west.
         tests:
           - dbt_expectations.expect_column_values_to_be_between:
-              arguments:
-                min_value: 0
-                max_value: 315
+              min_value: 0
+              max_value: 315
 
       - name: gps_quality
         description: "Quality of the recorded GPS signal. Possible values are: 

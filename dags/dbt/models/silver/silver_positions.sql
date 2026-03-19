@@ -22,7 +22,12 @@ WITH bronze_vehicle_positions AS (
         CONVERT_TIMEZONE('UTC', 'Europe/Warsaw', "SCHEDULEDTRIPSTARTTIME") AS trip_starttime,
         "LAT"::NUMBER(10,7) AS latitude,
         "LON"::NUMBER(10,7) AS longitude,
-        CAST("GPSQUALITY" AS SMALLINT) AS gps_quality
+        CAST("GPSQUALITY" AS SMALLINT) AS gps_quality,
+        CASE 
+            WHEN "GPSQUALITY" < 2 THEN 'LOW_QUALITY'
+            WHEN "SPEED" > 100 THEN 'INVALID_SPEED'
+            ELSE 'OK'
+        END::VARCHAR(15) AS data_quality_flag
     FROM
         {{ source('BUSES', 'BRONZE_POSITIONS') }}
 )

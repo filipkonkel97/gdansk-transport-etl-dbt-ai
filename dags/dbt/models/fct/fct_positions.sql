@@ -39,9 +39,11 @@ FROM {{ ref('silver_positions') }} p
 JOIN {{ ref('dim_vehicles')}} v
 ON p.vehicle_code = v.vehicle_code
 
+WHERE p.data_quality_flag = 'OK'
+
 {% if is_incremental() %}
 
-WHERE generated_at >
+AND p.generated_at >
 (
 SELECT MAX(event_datetime)
 FROM {{ this }}
