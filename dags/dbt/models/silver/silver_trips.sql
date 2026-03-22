@@ -34,7 +34,7 @@ WITH bronze_trips AS (
         SELECT
             *,
             ROW_NUMBER() OVER (
-                PARTITION BY id, trip_headsign
+                PARTITION BY id, route_id, trip_id
                 ORDER BY activation_date DESC
             ) AS rn
         FROM bronze_trips

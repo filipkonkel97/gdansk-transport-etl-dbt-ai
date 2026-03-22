@@ -7,11 +7,28 @@
 WITH bronze_stops AS (
     SELECT
         "STOPID"::INTEGER AS stop_id,
-        COALESCE("STOPCODE", "SUBNAME")::TEXT AS stop_code,
-        COALESCE("STOPNAME", "STOPDESC")::VARCHAR(50) AS stop_name,
+        CASE
+            WHEN "STOPCODE" = '' THEN NULL
+            ELSE "STOPCODE"
+        END::TEXT AS stop_code,
+
+        CASE 
+            WHEN "STOPNAME" = '' THEN NULL
+            ELSE "STOPNAME"
+        END::VARCHAR(50) AS stop_name,
+
         "STOPSHORTNAME"::VARCHAR(50) AS short_name,
-        "STOPDESC"::TEXT AS stop_desc,
-        "SUBNAME"::VARCHAR(50) AS sub_name,
+
+        CASE
+            WHEN "STOPDESC" = '' THEN NULL
+            ELSE "STOPDESC"
+        END::TEXT AS stop_desc,
+
+        CASE
+            WHEN "SUBNAME" = '' THEN NULL
+            ELSE "SUBNAME"
+        END::VARCHAR(50) AS sub_name,
+
         "DATE"::DATE AS date,
         "ZONEID"::SMALLINT AS zone_id,
         "ZONENAME"::VARCHAR(100) AS zone_name,
@@ -54,9 +71,26 @@ WITH bronze_stops AS (
 ),
      deduplicated_data AS (
         SELECT
-            *,
+            stop_id,
+            COALESCE(stop_code, sub_name) AS stop_code,
+            COALESCE(stop_name, stop_desc) AS stop_name,
+            short_name,
+            stop_desc,
+            sub_name,
+            date,
+            zone_id,
+            zone_name,
+            virtual,
+            nonpassenger,
+            depot,
+            ticket_zone_border,
+            on_demand,
+            activation_date,
+            stop_lat,
+            stop_lon,
+            type,
             ROW_NUMBER() OVER (
-                PARTITION BY stop_id,stop_code, stop_name
+                PARTITION BY stop_id,stop_code
                 ORDER BY activation_date DESC
             ) AS rn
         FROM bronze_stops

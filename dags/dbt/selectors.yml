@@ -44,6 +44,12 @@ selectors:
           value: fct_delays
         - method: fqn
           value: silver_delays
+        - method: fqn
+          value: mart_route_performance
+        - method: fqn
+          value: mart_trip_delay_analysis
+        - method: fqn
+          value: mart_route_stop_delay_patterns
 
   - name: trips_only
     definition:

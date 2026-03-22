@@ -1,3 +1,4 @@
+-- depends_on: {{ ref('scd_silver_trips') }}
 {{
     config(
         materialized='incremental',

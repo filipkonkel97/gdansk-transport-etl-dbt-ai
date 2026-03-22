@@ -1,3 +1,5 @@
+-- depends_on: {{ ref('silver_trips') }}
+
 {% snapshot scd_silver_trips %}
 
 {{

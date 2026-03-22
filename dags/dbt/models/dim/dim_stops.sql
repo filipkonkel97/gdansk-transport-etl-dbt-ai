@@ -23,6 +23,8 @@ SELECT
     activation_date
 FROM {{ ref('scd_silver_stops') }}
 WHERE DBT_VALID_TO IS NULL
+AND stop_code IS NOT NULL
+AND sub_name IS NOT NULL
 
 {% if is_incremental() %}
     AND activation_date > (SELECT MAX(activation_date) FROM {{ this }})
