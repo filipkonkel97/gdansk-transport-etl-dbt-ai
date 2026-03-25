@@ -44,12 +44,6 @@ selectors:
           value: fct_delays
         - method: fqn
           value: silver_delays
-        - method: fqn
-          value: mart_route_performance
-        - method: fqn
-          value: mart_trip_delay_analysis
-        - method: fqn
-          value: mart_route_stop_delay_patterns
 
   - name: trips_only
     definition:
@@ -60,3 +54,17 @@ selectors:
           value: scd_silver_trips
         - method: fqn
           value: silver_trips
+
+  - name: marts_only
+    definition:
+      union:
+        - method: fqn
+          value: mart_route_variant_performance
+        - method: fqn
+          value: mart_trip_delay_analysis
+        - method: fqn
+          value: mart_route_stop_delay_patterns
+        - method: fqn
+          value: mart_weekday_hourly_delay_pattern
+        - method: fqn
+          value: mart_vehicle_speed_time
