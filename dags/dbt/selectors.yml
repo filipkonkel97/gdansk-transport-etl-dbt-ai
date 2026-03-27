@@ -68,3 +68,7 @@ selectors:
           value: mart_weekday_hourly_delay_pattern
         - method: fqn
           value: mart_vehicle_speed_time
+        - method: fqn
+          value: mart_trip_delay_pattern
+        - method: fqn
+          value: mart_route_variant_stop_hourly_delay

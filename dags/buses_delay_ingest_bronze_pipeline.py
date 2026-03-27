@@ -7,12 +7,12 @@ import os
 import pandas as pd
 
 @dag(
-    dag_id="gdansk_public_transport_delays_pipeline_w_dbt",
-    description='Python + Snowflake + dbt pipeline',
+    dag_id="gdansk_public_transport_delays_bronze_ingestion_pipeline",
+    description='Python + Snowflake',
     start_date=datetime(2024, 1, 1),
     schedule='1/3 * * * *',
     catchup=False,
-    tags=['python', 'snowflake','dbt']
+    tags=['python', 'snowflake','bronze', 'delays']
 )
 
 def delays_pipeline():
@@ -51,37 +51,10 @@ def delays_pipeline():
 
         loader.load_data(df, schema='buses.bronze', table_name='bronze_delays')
 
-    profile_config = ProfileConfig(
-        profile_name = "snowflake_profile",
-        target_name = "dev",
-        profile_mapping = SnowflakeUserPasswordProfileMapping(
-            conn_id = "snowflake_conn",
-            profile_args = {
-                "schema": "buses",
-                "database": "buses"
-            }
-        )
-    )
-    
-    delays_dbt_group = DbtTaskGroup(
-        project_config = ProjectConfig(
-            dbt_project_path = "/usr/local/airflow/dags/dbt"
-        ),
-        profile_config = profile_config,
-        execution_config = ExecutionConfig(
-            dbt_executable_path="/usr/local/airflow/dbt_venv/bin/dbt"
-        ),
-        group_id = "dbt_delays_run",
-        render_config = RenderConfig(
-            selector="buses_delays_only",
-            load_method=LoadMode.DBT_LS,
-        )
-    )
-
     extracted = extract_buses_delays_data()
     transformed = transform_buses_delays_data(extracted)
     loaded = load_buses_delays_data(transformed)
 
-    extracted >> transformed >> loaded >> delays_dbt_group
+    extracted >> transformed >> loaded
 
 delays_pipeline()

@@ -7,50 +7,15 @@ import os
 import pandas as pd
 
 @dag(
-    dag_id="gdansk_public_transport_vehicles_psn_w_dbt_pipeline",
+    dag_id="gdansk_public_transport_vehicles_psn_silver_gold_w_dbt_pipeline",
     description='Python + Snowflake + dbt pipeline',
     start_date=datetime(2024, 1, 1),
-    schedule='1/3 * * * *',
+    schedule='0 * * * *',
     catchup=False,
-    tags=['python', 'snowflake','dbt']
+    tags=['python', 'snowflake','dbt', 'vehicles', 'psn', 'silver', 'gold']
 )
 
 def vehicles_psn_pipeline():
-    @task
-    def extract_vehicles_psn_data():
-        from etl_logic.api_client import APIClient
-        from dotenv import load_dotenv
-
-        load_dotenv()
-        vehicles_psn_api = os.getenv("vehicles_psn_api")
-        
-        client = APIClient(vehicles_psn_api)
-        data = client.fetch_data()
-        return data
-    
-    @task
-    def transform_vehicles_psn_data(data):
-        from etl_logic.data_transformations import transform_vehicle_psn_data
-
-        transformed_data = transform_vehicle_psn_data(data)
-
-        df = pd.DataFrame(transformed_data)
-
-        df.columns = df.columns.str.upper()
-
-        return df
-
-    @task
-    def load_vehicles_psn_data(df):
-        from etl_logic.snowflake_loader import SnowflakeLoader
-
-        hook = SnowflakeHook(snowflake_conn_id="snowflake_conn")
-        db_conn = hook.get_sqlalchemy_engine()
-
-        loader = SnowflakeLoader(db_conn)
-
-        loader.load_data(df, schema='buses.bronze', table_name='bronze_positions')
-
     profile_config = ProfileConfig(
         profile_name = "snowflake_profile",
         target_name = "dev",
@@ -78,10 +43,6 @@ def vehicles_psn_pipeline():
         )
     )
 
-    extracted = extract_vehicles_psn_data()
-    transformed = transform_vehicles_psn_data(extracted)
-    loaded = load_vehicles_psn_data(transformed)
-
-    extracted >> transformed >> loaded >> vehicles_psn_dbt_group
+    vehicles_psn_dbt_group
 
 vehicles_psn_pipeline()
