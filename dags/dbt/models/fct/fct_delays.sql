@@ -7,6 +7,30 @@
         incremental_strategy='append'
     )
 }}
+WITH delays AS (
+    SELECT
+        stop_id,
+        route_id,
+        trip_id,
+        vehicle_code,
+        headsign,
+    
+        current_datetime AS event_datetime,
+    
+        scheduled_departure_time,
+        est_departure_time,
+        trip_starttime,
+    
+        delay_in_seconds,
+        delay_in_seconds / 60 AS delay_minutes,
+    
+        status,
+        vehicle_service,
+        vehicle_id,
+        ROW_NUMBER() OVER(PARTITION BY STOP_ID, ROUTE_ID, TRIP_ID, trip_starttime ORDER BY current_datetime DESC) AS rn 
+    
+    FROM {{ ref('silver_delays') }}
+)
 
 SELECT
 
@@ -36,9 +60,10 @@ SELECT
     d.vehicle_service,
     d.vehicle_id
 
-FROM {{ ref('silver_delays') }} d
+FROM delays d
 JOIN {{ ref('dim_stops') }} s
 ON d.stop_id = s.stop_id
+WHERE d.rn = 1
 
 {% if is_incremental() %}
 
