@@ -17,19 +17,24 @@ class PlotsRepository:
         return fig
     
     @staticmethod
-    def plot_map(df, tooltip):
+    def plot_map(df, tooltip, radius=80, lat=None, long=None):
+        if lat is None:
+            lat = df["lat"].mean()
+        if long is None:
+            long = df["lon"].mean()
+
         layer = pdk.Layer(
             "ScatterplotLayer",
             data=df,
             get_position='[lon, lat]',
-            get_radius='80',
+            get_radius=radius,
             get_fill_color='[255, 0, 0, 160]',
             pickable=True
         )
 
         view_state = pdk.ViewState(
-            latitude=df["lat"].mean(),
-            longitude=df["lon"].mean(),
+            latitude=lat,
+            longitude=long,
             zoom=11,
             pitch=0
         )

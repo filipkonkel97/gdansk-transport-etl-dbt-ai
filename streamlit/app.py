@@ -1,7 +1,7 @@
 import streamlit as st
 from src.db.snowflakedb import SnowflakeDB
 from src.plots.plots_repository import PlotsRepository
-from src.db.queries import get_delay_per_hour, get_route_variant_stop_hourly_delay, get_avg_delay_by_day_hour
+from src.db.queries import get_delay_per_hour, get_route_variant_stop_hourly_delay, get_avg_delay_by_day_hour, get_stop_delays
 
 db = SnowflakeDB()
 plt = PlotsRepository()
@@ -9,7 +9,7 @@ plt = PlotsRepository()
 st.set_page_config(layout="wide")
 st.title("Bus Delay Analytics + AI Assistant")
 
-tab1, tab2, tab3 = st.tabs(["Home", "Analytics", "Settings"])
+tab1, tab2, tab3, tab4 = st.tabs(["Home", "Analytics", "Stops", "Settings"])
 
 with tab1:
     # ========== DASHBOARD ==========
@@ -70,11 +70,30 @@ with tab2:
         df_headsign["trip_starttime"] == trip_starttime
     ]
 
-    r = plt.plot_map(df=filtered_df, tooltip={"html": "Stop name: {stop_name} <br> Mean delay (s): {mean_delay}"})
+    r = plt.plot_map(
+            df=filtered_df, 
+            tooltip={"html": "Stop name: {stop_name} <br> Mean delay (s): {mean_delay}"}
+            )
 
     st.pydeck_chart(r, use_container_width=True, width='stretch')
 
 
 with tab3:
+    # ========== DASHBOARD ==========
+    st.header("Stops locations and delays")
+
+    df_stops_delays = get_stop_delays(db)
+
+    r = plt.plot_map(
+        df=df_stops_delays, 
+        tooltip={"html": "Stop name: {stop_name} <br> Mean delay (s): {mean_delay}"},
+        radius= 'mean_delay * 0.1',
+        lat=54.45,
+        long=18.55
+        )
+
+    st.pydeck_chart(r, use_container_width=True, width='stretch')
+
+with tab4:
     st.header("Ustawienia")
     st.write("Tutaj konfigurujesz aplikację")
