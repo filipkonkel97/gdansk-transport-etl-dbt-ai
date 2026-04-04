@@ -59,16 +59,10 @@ selectors:
     definition:
       union:
         - method: fqn
-          value: mart_route_variant_performance
-        - method: fqn
-          value: mart_trip_delay_analysis
-        - method: fqn
-          value: mart_route_stop_delay_patterns
-        - method: fqn
-          value: mart_weekday_hourly_delay_pattern
-        - method: fqn
-          value: mart_vehicle_speed_time
-        - method: fqn
-          value: mart_trip_delay_pattern
+          value: mart_buses_avg_delay_top10
         - method: fqn
           value: mart_route_variant_stop_hourly_delay
+        - method: fqn
+          value: mart_hourly_avg_delay
+        - method: fqn
+          value: mart_avg_delay_by_day_hour

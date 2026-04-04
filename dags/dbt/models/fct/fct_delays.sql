@@ -1,5 +1,3 @@
--- depends_on: {{ ref('dim_stops') }}
-
 {{
     config(
         schema='gold',
@@ -38,16 +36,16 @@ SELECT
         'd.trip_id',
         'd.stop_id',
         'd.vehicle_code',
-        'd.current_datetime'
+        'd.event_datetime'
     ]) }} AS event_id,
 
     d.stop_id,
     d.route_id,
     d.trip_id,
     d.vehicle_code,
-    d.headsign,
+    t.trip_headsign AS headsign,
 
-    d.current_datetime AS event_datetime,
+    d.event_datetime,
 
     d.scheduled_departure_time,
     d.est_departure_time,
@@ -62,12 +60,15 @@ SELECT
 
 FROM delays d
 JOIN {{ ref('dim_stops') }} s
-ON d.stop_id = s.stop_id
+    ON d.stop_id = s.stop_id
+LEFT JOIN {{ ref('dim_trips') }} t
+    ON d.trip_id = t.trip_id
+    AND d.route_id = t.route_id
 WHERE d.rn = 1
 
 {% if is_incremental() %}
 
-AND current_datetime >
+AND d.event_datetime >
 (
     SELECT MAX(event_datetime)
     FROM {{ this }}
