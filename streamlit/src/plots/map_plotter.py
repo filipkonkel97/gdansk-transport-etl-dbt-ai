@@ -2,18 +2,23 @@ import pydeck as pdk
 
 
 class MapPlotter:
-    def __init__(self, center_lat=54.45, center_lon=18.55, zoom=11):
+    def __init__(self, center_lat=None, center_lon=None, zoom=11):
         self.center_lat = center_lat
         self.center_lon = center_lon
         self.zoom = zoom
 
     def plot_map(self, df, tooltip=None, radius=60):
+        if self.center_lat is None:
+            self.center_lat = df["LAT"].mean()
+        if self.center_lon is None:
+            self.center_lon = df["LON"].mean()
+
         layer = pdk.Layer(
             "ScatterplotLayer",
             data=df,
             get_position="[LON, LAT]",
             get_radius=radius,
-            get_fill_color=[255, 0, 0],
+            get_fill_color=[255, 0, 0, 160],
             pickable=True,
         )
 

@@ -1,9 +1,24 @@
+from src.db.snowflake_conn import SnowflakeDB
+
 import streamlit as st
 
 
+@st.cache_resource
+def get_db():
+    return SnowflakeDB(
+        user=st.secrets["user"],
+        password=st.secrets["password"],
+        account=st.secrets["account"],
+        database=st.secrets["database"],
+        schema=st.secrets["schema"],
+        warehouse=st.secrets["warehouse"],
+    )
+
+
 @st.cache_data(ttl=3600)
-def get_delay_per_hour(_db):
-    return _db.query(
+def get_delay_per_hour():
+    db = get_db()
+    return db.query(
         """
         SELECT 
             *
@@ -13,16 +28,17 @@ def get_delay_per_hour(_db):
 
 
 @st.cache_data(ttl=3600)
-def get_route_variant_stop_hourly_delay(_db):
-    return _db.query(
+def get_route_variant_stop_hourly_delay():
+    db = get_db()
+    return db.query(
         """
         SELECT 
             ROUTE_SHORT_NAME AS route_short_name,
             HEADSIGN AS headsign,
             CAST(TRIP_STARTTIME AS STRING) AS trip_starttime,
             STOP_NAME AS stop_name,
-            STOP_LAT AS lat,
-            STOP_LON AS lon,
+            STOP_LAT AS LAT,
+            STOP_LON AS LON,
             MEAN_DELAY AS mean_delay
         FROM BUSES.BUSES_MART.mart_route_variant_stop_hourly_delay
         """
@@ -30,8 +46,9 @@ def get_route_variant_stop_hourly_delay(_db):
 
 
 @st.cache_data(ttl=3600)
-def get_avg_delay_by_day_hour(_db):
-    return _db.query(
+def get_avg_delay_by_day_hour():
+    db = get_db()
+    return db.query(
         """
         SELECT 
             day_of_week,
@@ -43,8 +60,9 @@ def get_avg_delay_by_day_hour(_db):
 
 
 @st.cache_data(ttl=3600)
-def get_stop_delays(_db):
-    return _db.query(
+def get_stop_delays():
+    db = get_db()
+    return db.query(
         """
         SELECT
             s.STOP_DESC AS STOP_NAME,
