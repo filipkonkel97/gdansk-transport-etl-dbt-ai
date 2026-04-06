@@ -17,7 +17,7 @@ def extract_vehicles_psn_data():
 
 
 def transform_vehicles_psn_data(data):
-    from .vh_psn import transform_vehicle_psn_data
+    from .psn_transformer import transform_vehicle_psn_data
 
     transformed_data = transform_vehicle_psn_data(data)
 
@@ -25,5 +25,4 @@ def transform_vehicles_psn_data(data):
 
     df.columns = df.columns.str.upper()
 
-    return df
     return df
