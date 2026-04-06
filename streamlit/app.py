@@ -1,7 +1,21 @@
-import streamlit as st
+import os
+
+import pandas as pd
+from src.api_calls.get_psns import (
+    extract_vehicles_psn_data,
+    transform_vehicles_psn_data,
+)
+from src.db.queries import (
+    get_avg_delay_by_day_hour,
+    get_delay_per_hour,
+    get_route_variant_stop_hourly_delay,
+    get_stop_delays,
+)
 from src.db.snowflakedb import SnowflakeDB
 from src.plots.plots_repository import PlotsRepository
-from src.db.queries import get_delay_per_hour, get_route_variant_stop_hourly_delay, get_avg_delay_by_day_hour, get_stop_delays
+from streamlit_autorefresh import st_autorefresh
+
+import streamlit as st
 
 db = SnowflakeDB()
 plt = PlotsRepository()
@@ -17,7 +31,7 @@ with tab1:
 
     df = get_delay_per_hour(db)
 
-    fig = plt.plot_bar(df = df, x="hour", y="avg_delay", title="Average delay per hour")
+    fig = plt.plot_bar(df=df, x="hour", y="avg_delay", title="Average delay per hour")
 
     st.plotly_chart(fig, use_container_width=True)
 
@@ -26,14 +40,16 @@ with tab1:
 
     df_2 = get_avg_delay_by_day_hour(db)
 
-    weekday = st.selectbox(
-        "Day of week", 
-        df_2["day_of_week"].unique()
-        )
-    
+    weekday = st.selectbox("Day of week", df_2["day_of_week"].unique())
+
     df_weekday = df_2[df_2["day_of_week"] == weekday]
 
-    fig = plt.plot_bar(df = df_weekday, x="day_time", y="mean_delay", title=f"Average delay per hour for {weekday}")
+    fig = plt.plot_bar(
+        df=df_weekday,
+        x="day_time",
+        y="mean_delay",
+        title=f"Average delay per hour for {weekday}",
+    )
 
     st.plotly_chart(fig, use_container_width=True)
 
@@ -44,38 +60,30 @@ with tab2:
 
     df_1 = get_route_variant_stop_hourly_delay(db)
 
-    route = st.selectbox(
-        "Route", 
-        df_1["route_short_name"].unique()
-        )
+    route = st.selectbox("Route", df_1["route_short_name"].unique())
 
     df_route = df_1[df_1["route_short_name"] == route]
 
-    headsign = st.selectbox(
-        "Headsign", 
-        sorted(df_route["headsign"].unique())
-        )
+    headsign = st.selectbox("Headsign", sorted(df_route["headsign"].unique()))
 
     df_headsign = df_route[df_route["headsign"] == headsign]
 
     trip_starttime = st.selectbox(
         "Select trip start time",
         sorted(df_headsign["trip_starttime"].unique()),
-        key = 'trip_starttime'
+        key="trip_starttime",
     )
 
     st.write(f"Selected trip start time: {trip_starttime}")
 
-    filtered_df = df_headsign[
-        df_headsign["trip_starttime"] == trip_starttime
-    ]
+    filtered_df = df_headsign[df_headsign["trip_starttime"] == trip_starttime]
 
     r = plt.plot_map(
-            df=filtered_df, 
-            tooltip={"html": "Stop name: {stop_name} <br> Mean delay (s): {mean_delay}"}
-            )
+        df=filtered_df,
+        tooltip={"html": "Stop name: {stop_name} <br> Mean delay (s): {mean_delay}"},
+    )
 
-    st.pydeck_chart(r, use_container_width=True, width='stretch')
+    st.pydeck_chart(r, use_container_width=True, width="stretch")
 
 
 with tab3:
@@ -85,15 +93,41 @@ with tab3:
     df_stops_delays = get_stop_delays(db)
 
     r = plt.plot_map(
-        df=df_stops_delays, 
+        df=df_stops_delays,
         tooltip={"html": "Stop name: {stop_name} <br> Mean delay (s): {mean_delay}"},
-        radius= 'mean_delay * 0.1',
+        radius="mean_delay * 0.1",
         lat=54.45,
-        long=18.55
-        )
+        long=18.55,
+    )
 
-    st.pydeck_chart(r, use_container_width=True, width='stretch')
+    st.pydeck_chart(r, use_container_width=True, width="stretch")
 
 with tab4:
     st.header("Ustawienia")
     st.write("Tutaj konfigurujesz aplikację")
+
+    st_autorefresh(interval=5000, key="map_refresh")
+
+    data = extract_vehicles_psn_data()
+    df_bus = transform_vehicles_psn_data(data)
+
+    df_bus["LAT"] = pd.to_numeric(df_bus["LAT"], errors="coerce")
+    df_bus["LON"] = pd.to_numeric(df_bus["LON"], errors="coerce")
+
+    st.dataframe(df_bus)
+
+    r = plt.plot_map(
+        df=df_bus,
+        tooltip={
+            "html": """Route: {ROUTESHORTNAME} <br>
+                       Headsign: {HEADSIGN} <br>
+                       Delay (s): {DELAY} <br>
+                       Speed (km/h): {SPEED} <br>
+                       Direction: {DIRECTION} <br>
+                       Vehicle: {VEHICLECODE}"""
+        },
+        lat=54.45,
+        long=18.55,
+    )
+
+    st.pydeck_chart(r, use_container_width=True)
