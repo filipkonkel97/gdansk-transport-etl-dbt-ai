@@ -28,7 +28,7 @@ plt = BarPlotter()
 live_bus = LiveBusData()
 
 st.set_page_config(layout="wide")
-st.title("Bus Delay Analytics + AI Assistant")
+st.title("Bus Delay Analytics")
 tab1, tab2, tab3, tab4, tab5 = st.tabs(
     ["System Overview", "Route Analysis", "Stops Analysis", "Realtime", "Chatbot"]
 )
