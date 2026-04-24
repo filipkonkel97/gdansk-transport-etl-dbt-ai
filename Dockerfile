@@ -1,10 +1,4 @@
-FROM python:3.11-slim
+FROM astrocrpublic.azurecr.io/runtime:3.1-13
 
-WORKDIR /app
-
-COPY streamlit/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-EXPOSE 8501
-
-CMD ["streamlit", "run", "/app/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+RUN python -m venv dbt_venv && source dbt_venv/bin/activate && \
+    pip install --no-cache-dir dbt-snowflake && deactivate
