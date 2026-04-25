@@ -8,10 +8,7 @@ def extract_vehicles_psn_data():
 
     from .api_client import APIClient
 
-    load_dotenv()
-    vehicles_psn_api = os.getenv("vehicles_psn_api")
-
-    client = APIClient(vehicles_psn_api)
+    client = APIClient("https://ckan2.multimediagdansk.pl/gpsPositions?v=2")
     data = client.fetch_data()
     return data
 

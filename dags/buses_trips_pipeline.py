@@ -1,5 +1,6 @@
 from airflow.sdk import dag, task
 from datetime import datetime, timedelta
+from airflow.hooks.base import BaseHook
 from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
 from cosmos import DbtTaskGroup, ProjectConfig, ProfileConfig, ExecutionConfig, RenderConfig, LoadMode
 from cosmos.profiles import SnowflakeUserPasswordProfileMapping
@@ -19,11 +20,10 @@ def trips_pipeline():
     @task
     def extract_buses_trips_data():
         from etl_logic.api_client import APIClient
-        from dotenv import load_dotenv
 
-        load_dotenv()
-        trips_api = os.getenv("trips_api")
-        
+        conn = BaseHook.get_connection("trips_api")
+        trips_api = conn.host
+
         client = APIClient(trips_api)
         data = client.fetch_data()
         return data
