@@ -42,6 +42,36 @@ The goal is to provide a full data pipeline from raw ingestion -> transformation
 * Data Visualization -> Streamlit dashboard
 ![Project diagram](diagrams/api_data_processing.png)
 
+## Data Model:
+The project follows a layered architecture:
+
+* **Bronze** – raw ingested data from APIs  
+* **Silver** – cleaned and standardized data  
+* **Gold** – business-ready datasets (facts & dimensions)  
+* **Marts** – analytical tables for reporting  
+
+### Core Tables:
+* `fct_delays` – delay events
+* `fct_positions` – vehicle GPS positions
+* `dim_routes`, `dim_stops`, `dim_trips`, `dim_vehicles`
+
+## Pipeline Flow
+
+1. Airflow triggers ingestion DAGs
+2. Data is fetched from external APIs
+3. Raw data is loaded into Snowflake (Bronze layer)
+4. dbt runs transformations:
+   - Silver layer (cleaning & normalization)
+   - Gold layer (facts & dimensions)
+   - Marts (aggregations)
+5. Streamlit dashboard queries Snowflake for visualization
+
+## Example Use Cases
+* Identify routes with highest delays
+* Analyze peak-hour congestion patterns
+* Track vehicle movement in real-time
+* Monitor transport system performance
+
 ## Project Setup:
 1. **Install Ubuntu on Windows using WSL**`
    To run Ubuntu on Windows, first install WSL (Windows Subsystem for Linux). Open PowerShell as Administrator and run:
